@@ -1,0 +1,164 @@
+version: '3.8'
+
+# ===================================================================
+# QMS 分散式基礎設施 (Postgres + Redis + KRaft Kafka + Kafka UI)
+# 架構對齊：拔除 CDC，全面依賴應用層 Outbox Pattern 發送事件
+# ===================================================================
+services:
+
+  # 1. QMS 關聯式資料庫
+  qms-postgres:
+    image: postgres:15-alpine
+    container_name: qms-postgres
+    restart: "no" # 🛑 強制阻斷 Docker Desktop 開機自動啟動
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: qms_db
+      TZ: Asia/Taipei
+    volumes:
+      - qms-postgres-data:/var/lib/postgresql/data
+    networks:
+      - qms-network
+
+  # 2. Redis Cluster (3 Masters, 0 Replicas) - 網關限流與分散式快取
+  # 【改動註解】：
+  # 1. 將單點架構升級為 3 節點的微型 Cluster，透過 REDIS_CLUSTER_CREATOR 自動初始化。
+  # 2. 透過 REDIS_AOF_ENABLED=yes 開啟 Append-Only File 持久化機制。
+  # 3. 將資料持久化目錄綁定至本機實體路徑：D:/桌面/中間件/qms/redis-node-x
+  qms-redis-node-0:
+    image: docker.io/bitnamilegacy/redis-cluster:latest
+    container_name: qms-redis-node-0
+    restart: "no"
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_CLUSTER_CREATOR=yes
+      - REDIS_NODES=172.20.0.10 172.20.0.11 172.20.0.12
+      - REDIS_CLUSTER_REPLICAS=0
+      - REDIS_PASSWORD=qms_redis_pass
+      - REDIS_AOF_ENABLED=yes
+    volumes:
+      - qms-redis-node-0-data:/bitnami/redis/data
+    networks:
+      qms-network:
+        ipv4_address: 172.20.0.10
+
+  qms-redis-node-1:
+    image: docker.io/bitnamilegacy/redis-cluster:latest
+    container_name: qms-redis-node-1
+    restart: "no"
+    ports:
+      - "6380:6379"
+    environment:
+      - REDIS_NODES=172.20.0.10 172.20.0.11 172.20.0.12
+      - REDIS_CLUSTER_REPLICAS=0
+      - REDIS_PASSWORD=qms_redis_pass
+      - REDIS_AOF_ENABLED=yes
+    volumes:
+      - qms-redis-node-1-data:/bitnami/redis/data
+    networks:
+      qms-network:
+        ipv4_address: 172.20.0.11
+
+  qms-redis-node-2:
+    image: docker.io/bitnamilegacy/redis-cluster:latest
+    container_name: qms-redis-node-2
+    restart: "no"
+    ports:
+      - "6381:6379"
+    environment:
+      - REDIS_NODES=172.20.0.10 172.20.0.11 172.20.0.12
+      - REDIS_CLUSTER_REPLICAS=0
+      - REDIS_PASSWORD=qms_redis_pass
+      - REDIS_AOF_ENABLED=yes
+    volumes:
+      - qms-redis-node-2-data:/bitnami/redis/data
+    networks:
+      qms-network:
+        ipv4_address: 172.20.0.12
+
+  qms-redis-cluster-init:
+    image: bitnamilegacy/redis-cluster:latest
+    container_name: qms-redis-cluster-init
+    depends_on:
+      - qms-redis-node-0
+      - qms-redis-node-1
+      - qms-redis-node-2
+    networks:
+      - qms-network
+    command: >
+      bash -c "
+      sleep 10 &&
+      echo 'yes' | redis-cli --cluster create 172.20.0.10:6379 172.20.0.11:6379 172.20.0.12:6379 --cluster-replicas 0 -a qms_redis_pass || true
+      "
+
+  # 📨 3. Kafka (KRaft 模式，內外雙網完美監聽)
+  qms-kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: qms-kafka
+    restart: "no" # 🛑 強制阻斷 Docker Desktop 開機自動啟動
+    ports:
+      - "9092:9092" # 暴漏給主機端 Spring Boot 連線
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      # 核心優化：內外雙網監聽！
+      # INTERNAL (29092): 供 Docker 內部的 Kafka-UI 溝通
+      # EXTERNAL (9092): 供你本機的 Spring Boot (8080/8081) 透過 localhost 連線
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://qms-kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@qms-kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk # KRaft 初始化必須的叢集 ID
+      TZ: Asia/Taipei
+    volumes:
+      - qms-kafka-data:/var/lib/kafka/data
+    networks:
+      - qms-network
+
+  # 4. Kafka UI (高顏值監控面板)
+  qms-kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: qms-kafka-ui
+    restart: "no" # 🛑 強制阻斷 Docker Desktop 開機自動啟動
+    depends_on:
+      - qms-kafka
+    ports:
+      - "8090:8080" # 避開你本機的 8080/8081 Port，改用 8090
+    environment:
+      KAFKA_CLUSTERS_0_NAME: qms-cluster
+      # 透過 Docker 內部網路 (INTERNAL) 連接 Kafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: qms-kafka:29092
+    networks:
+      - qms-network
+
+# ===================================================================
+# 資料卷與共用網路定義
+# ===================================================================
+volumes:
+  qms-postgres-data:
+    name: qms-postgres-data
+  qms-kafka-data:
+    name: qms-kafka-data
+  qms-redis-node-0-data:
+    name: qms-redis-node-0-data
+  qms-redis-node-1-data:
+    name: qms-redis-node-1-data
+  qms-redis-node-2-data:
+    name: qms-redis-node-2-data
+
+networks:
+  qms-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

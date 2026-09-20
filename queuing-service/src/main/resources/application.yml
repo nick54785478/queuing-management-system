@@ -1,0 +1,67 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: queuing-service
+    
+  # Redis 配置 (符合 docker-compose.yml 的設定)
+  data:
+    redis:
+      password: qms_redis_pass
+      cluster:
+        nodes:
+          - localhost:6379
+          - localhost:6380
+          - localhost:6381
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 50
+          min-idle: 10
+
+  # Kafka 配置 (符合 docker-compose.yml 的設定)
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: true
+    consumer:
+      group-id: qms-queuing-service-group
+      auto-offset-reset: earliest
+      max-poll-records: 500
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: "com.example.mock.event.DownstreamTaskCompletedEvent:com.example.qms.presentation.resource.in.DownstreamTaskCompletedEvent"
+    listener:
+      type: batch
+
+  # 如果未來需要寫入 PostgreSQL 的話，預留的配置 (目前排隊核心操作都走 Redis)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/qms_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+qms:
+  redis:
+    nodes:
+      - "redis://127.0.0.1:6379"
+      - "redis://127.0.0.1:6380"
+      - "redis://127.0.0.1:6381"
+    nat-map:
+      "[172.20.0.10:6379]": "127.0.0.1:6379"
+      "[172.20.0.11:6379]": "127.0.0.1:6380"
+      "[172.20.0.12:6379]": "127.0.0.1:6381"
