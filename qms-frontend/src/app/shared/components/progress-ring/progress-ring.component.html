@@ -1,0 +1,33 @@
+<div class="progress-container">
+  <svg class="progress-ring" width="120" height="120">
+    <circle
+      class="progress-ring__circle-bg"
+      stroke="rgba(255, 255, 255, 0.1)"
+      stroke-width="8"
+      fill="transparent"
+      r="45"
+      cx="60"
+      cy="60"
+    />
+    <circle
+      class="progress-ring__circle"
+      stroke="url(#gradient)"
+      stroke-width="8"
+      fill="transparent"
+      r="45"
+      cx="60"
+      cy="60"
+      [style.strokeDashoffset]="strokeDashoffset"
+    />
+    <defs>
+      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#00f2fe" />
+        <stop offset="100%" stop-color="#4facfe" />
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="progress-text">
+    <span class="label">等待人數</span>
+    <span class="value">{{ totalPeopleAhead }}</span>
+  </div>
+</div>

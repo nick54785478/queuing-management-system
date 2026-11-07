@@ -1,0 +1,24 @@
+<div class="glass-card operator-card">
+  <div class="card-header">
+    <h2>QMS <span class="highlight">Operator</span> Desk</h2>
+    <p>手動放行與叫號面板</p>
+  </div>
+
+  <div class="card-body">
+    <div class="action-section">
+      <p class="help-text">點擊下方按鈕以執行放行。系統將依據管理員設定的批次數量呼叫客人。請確認系統已切換為「手動放行」模式。</p>
+      
+      <button 
+        class="btn-secondary manual-btn" 
+        [disabled]="isDequeuing" 
+        (click)="manualDequeue()">
+        <span *ngIf="!isDequeuing">放行下一批 (Call Next Batch)</span>
+        <span *ngIf="isDequeuing" class="spinner"></span>
+      </button>
+    </div>
+    
+    <div class="alert success-alert fade-in" *ngIf="successMessage">
+      已成功發送放行指令！
+    </div>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+<div class="glass-card">
+  <div class="card-header">
+    <h2>QMS <span class="highlight">Queueing System</span></h2>
+    <p>Enterprise-grade Edge Protection</p>
+  </div>
+
+  <div class="card-body">
+    <!-- IDLE State -->
+    <div class="state-idle" *ngIf="status === 'IDLE'">
+      <div class="icon-container pulse-animation">
+        <i class="ticket-icon">🎟️</i>
+      </div>
+      <h3>準備好取得您的號碼牌了嗎？</h3>
+      <p>點擊下方按鈕加入排隊列，我們將為您保留專屬位置。</p>
+      <button class="btn-primary" (click)="enqueue()">
+        <span>領取號碼牌</span>
+        <div class="glow"></div>
+      </button>
+    </div>
+
+    <!-- QUEUING State -->
+    <div class="state-queuing fade-in" *ngIf="status === 'QUEUING'">
+      <app-progress-ring 
+        [totalPeopleAhead]="peopleAhead"
+        [myTicketNumber]="ticketNumber"
+        [currentServingNumber]="currentServingNumber">
+      </app-progress-ring>
+      
+      <div class="ticket-details">
+        <div class="detail-box">
+          <span class="label">您的號碼</span>
+          <span class="value number">{{ ticketNumber }}</span>
+        </div>
+        <div class="divider"></div>
+        <div class="detail-box">
+          <span class="label">目前處理號碼</span>
+          <span class="value current">{{ currentServingNumber }}</span>
+        </div>
+      </div>
+      <p class="status-msg">請保持此頁面開啟，系統將為您自動更新進度。</p>
+    </div>
+
+    <!-- PASSED State -->
+    <div class="state-passed fade-in" *ngIf="status === 'PASSED'">
+      <div class="icon-container success-bounce">
+        <i class="check-icon">✅</i>
+      </div>
+      <h3>輪到您了！</h3>
+      <p>您的排隊號碼 <strong>{{ ticketNumber }}</strong> 已獲放行，即將進入系統...</p>
+      <button class="btn-success" (click)="enterSystem()">
+        <span>進入系統</span>
+      </button>
+    </div>
+
+    <!-- IN_SYSTEM State -->
+    <div class="state-in-system fade-in" *ngIf="status === 'IN_SYSTEM'">
+      <div class="icon-container success-bounce">
+        <i class="check-icon">🏢</i>
+      </div>
+      <h3>歡迎來到下游系統</h3>
+      <p>您已成功進入系統。點擊下方按鈕以模擬執行實際的後續業務流程...</p>
+      <button class="btn-primary" (click)="executeBusiness()">
+        <span>執行後續業務</span>
+        <div class="glow"></div>
+      </button>
+    </div>
+  </div>
+</div>

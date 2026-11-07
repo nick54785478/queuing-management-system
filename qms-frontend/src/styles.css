@@ -1,0 +1,114 @@
+/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0f172a;
+  color: #fff;
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+}
+
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% -20%, #1e293b, #0f172a);
+}
+
+/* Global UI Components */
+/* Glassmorphism Card styling */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  transform: skewX(-20deg);
+  animation: shine 6s infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.card-header .highlight {
+  font-weight: 700;
+  background: -webkit-linear-gradient(#00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.card-header p {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+  margin-top: 4px;
+  margin-bottom: 32px;
+}
+
+/* Buttons */
+.btn-primary, .btn-success {
+  position: relative;
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  box-shadow: 0 8px 24px rgba(79, 172, 254, 0.4);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  box-shadow: 0 8px 24px rgba(67, 233, 123, 0.4);
+}
+
+.btn-primary:hover, .btn-success:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary:active, .btn-success:active {
+  transform: translateY(1px);
+}

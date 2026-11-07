@@ -1,0 +1,84 @@
+<div class="glass-card admin-card">
+  <div class="card-header">
+    <h2>QMS <span class="highlight">Admin</span> Dashboard</h2>
+    <p>管理員專屬設定後台</p>
+  </div>
+
+  <div class="card-body">
+    <div class="setting-group">
+      <label for="queueMode">系統放行模式 (Queue Mode)</label>
+      <div class="input-wrapper">
+        <select id="queueMode" [(ngModel)]="mode" class="glass-input">
+          <option value="AUTOMATIC">全自動放行 (如:電商搶購)</option>
+          <option value="MANUAL">手動放行 (如:門診叫號)</option>
+        </select>
+      </div>
+      <p class="help-text">切換全自動與手動放行模式。</p>
+    </div>
+
+    <div class="setting-group">
+      <label for="batchSize">單次放行數量 (Dequeue Batch Size)</label>
+      <div class="input-wrapper">
+        <input id="batchSize" type="number" [(ngModel)]="dequeueBatchSize" min="1" class="glass-input" />
+      </div>
+      <p class="help-text">設定每次放行時處理的號碼數量。</p>
+    </div>
+
+    <div class="setting-group checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="resetDaily" />
+        <span class="checkbox-text">每日自動歸零 (Daily Reset)</span>
+      </label>
+      <p class="help-text">設定過了午夜是否自動從 1 號開始重新取號。</p>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-primary" [disabled]="isSaving" (click)="saveConfig()">
+        <span *ngIf="!isSaving">儲存設定</span>
+        <span *ngIf="isSaving" class="spinner"></span>
+      </button>
+    </div>
+
+    <div class="alert success-alert fade-in" *ngIf="saveSuccess">
+      設定已成功更新！
+    </div>
+  </div>
+</div>
+
+<!-- 新增容量管理獨立卡片 -->
+<div class="glass-card admin-card capacity-card">
+  <div class="card-header">
+    <h2><i class="icon-monitor">📊</i> 容量動態監控 <span class="highlight">(Live Capacity)</span></h2>
+    <p>即時監控下游系統的剩餘處理名額，並支援緊急動態注入與重置。</p>
+  </div>
+
+  <div class="card-body">
+    <div class="capacity-display">
+      <span class="capacity-label">當前剩餘空位 / 最大總容量</span>
+      <div class="capacity-values">
+        <span class="capacity-value" [class.danger]="currentCapacity === 0">{{ currentCapacity }}</span>
+        <span class="capacity-separator">/</span>
+        <span class="capacity-max">{{ maxCapacity }}</span>
+      </div>
+    </div>
+    
+    <div class="setting-group capacity-input-group">
+      <label for="targetCapacity">修改系統最大總容量</label>
+      <div class="input-wrapper">
+        <input id="targetCapacity" type="number" [(ngModel)]="targetCapacity" min="0" class="glass-input capacity-input" />
+      </div>
+      <p class="help-text warning-text">⚠️ 警告：這將會重新計算系統的總容量，請確保數字大於或等於目前的系統內人數。</p>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-danger" [disabled]="isResetting" (click)="resetCapacity()">
+        <span *ngIf="!isResetting">套用新容量 (Update Max Capacity)</span>
+        <span *ngIf="isResetting" class="spinner"></span>
+      </button>
+    </div>
+
+    <div class="alert success-alert fade-in" *ngIf="resetSuccess">
+      最大總容量已成功更新！
+    </div>
+  </div>
+</div>

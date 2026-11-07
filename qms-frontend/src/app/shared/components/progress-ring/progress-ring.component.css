@@ -1,0 +1,48 @@
+.progress-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.progress-ring__circle-bg,
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.5s ease-in-out;
+}
+
+.progress-ring__circle {
+  stroke-dasharray: 282.743; /* 2 * PI * 45 */
+  stroke-dashoffset: 282.743;
+  stroke-linecap: round;
+}
+
+.progress-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #ffffff;
+}
+
+.progress-text .label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+.progress-text .value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 4px;
+  background: -webkit-linear-gradient(#00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

@@ -1,0 +1,54 @@
+.app-header {
+  width: 100%;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 48px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+}
+
+.logo .highlight {
+  font-weight: 700;
+  background: -webkit-linear-gradient(#00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.nav-links a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-links a.active {
+  color: #fff;
+  background: rgba(79, 172, 254, 0.15);
+  box-shadow: 0 0 10px rgba(79, 172, 254, 0.2);
+}

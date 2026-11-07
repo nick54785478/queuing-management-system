@@ -1,0 +1,67 @@
+﻿:host {
+  display: block;
+  width: 100%;
+}
+.ticket-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+}
+
+.detail-box {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.detail-box .label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 8px;
+}
+
+.detail-box .value {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.value.number { color: #fff; }
+.value.current { color: #4facfe; }
+
+.divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,0.1);
+  margin: 0 16px;
+}
+
+.status-msg {
+  margin-top: 24px;
+  margin-bottom: 0;
+  font-size: 0.8rem;
+  color: #4facfe;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.success-bounce {
+  animation: bounce 0.6s cubic-bezier(0.28, 0.84, 0.42, 1);
+}
+
+@keyframes bounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
